@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 let sql;
 
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
 
 const db = new sqlite.Database("./users.db", (err) => {
   if (err) {
@@ -21,6 +22,7 @@ db.serialize(() => {
   db.run(`CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,
+      fullname TEXT NOT NULL,
       password TEXT NOT NULL
   )`);
 });
