@@ -21,15 +21,17 @@ const db = new sqlite3.Database("./reviews.db", (err) => {
   }
 });
 
-// สร้างตาราง reviews
-db.run(`
-  CREATE TABLE IF NOT EXISTS reviews (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
-    rating INTEGER NOT NULL,
-    review TEXT NOT NULL
-  )
-`);
+// สร้างตารางรีวิว (reviews)
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS reviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,  // เชื่อมโยงกับผู้ใช้
+      title TEXT NOT NULL,  // ชื่อรีวิว
+      content TEXT NOT NULL,  // เนื้อหาของรีวิว
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  // เวลาที่รีวิวถูกสร้าง
+      FOREIGN KEY (user_id) REFERENCES users(id)
+  )`);
+});
 
 // หน้ารีวิวหลัก
 app.get("/", (req, res) => {

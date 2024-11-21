@@ -123,6 +123,35 @@ app.get("/login", (req, res) => {
   });
 });
 
+app.post("/logout", (req, res) => {
+  res.status(200).json({ message: "Logged out successfully" });
+});
+
+// API ที่ต้องใช้ JWT สำหรับการยืนยันตัวตน (เช่น การดูข้อมูลผู้ใช้)
+app.get("/profile", (req, res) => {
+  const token = req.header("Authorization")?.split(" ")[1]; // ดึง token จาก header
+
+  if (!token) {
+    return res
+      .status(401)
+      .json({ message: "Access denied. No token provided." });
+  }
+
+  jwt.verify(token, "secret_key", (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ message: "Invalid token" });
+    }
+
+    // ผู้ใช้ที่ยืนยันตัวตนได้
+    db.get("SELECT * FROM users WHERE id = ?", [decoded.id], (err, row) => {
+      if (err || !row) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.status(200).json({ user: row });
+    });
+  });
+});
+
 //ตั้งค่าให้ server ทำงานที่ port 7001
 app.listen(7001, () => {
   console.log("Server is running on http://localhost:7001");
