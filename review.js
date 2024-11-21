@@ -5,6 +5,8 @@ const ejs = require("ejs");
 const path = require("path");
 
 const app = express();
+const cors = require("cors");
+app.use(cors());
 
 app.use(express.static(path.join(__dirname, "public"))); // ให้ Express ให้บริการไฟล์ในโฟลเดอร์ public
 
@@ -28,7 +30,9 @@ db.serialize(() => {
       user_id INTEGER NOT NULL,  // เชื่อมโยงกับผู้ใช้
       title TEXT NOT NULL,  // ชื่อรีวิว
       content TEXT NOT NULL,  // เนื้อหาของรีวิว
+      rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  // เวลาที่รีวิวถูกสร้าง
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  // เวลาที่รีวิวถูกแก้ไข
       FOREIGN KEY (user_id) REFERENCES users(id)
   )`);
 });
@@ -50,20 +54,21 @@ app.get("/add-review", (req, res) => {
 
 // API สำหรับเพิ่มรีวิว
 app.post("/add-review", (req, res) => {
-  const { username, rating, review } = req.body;
+  const { user_id, title, content, created_at } = req.body;
 
-  if (!username || !rating || !review) {
+  if (!user_id || !title || !content || !created_at) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   // บันทึกรีวิวลงในฐานข้อมูล
   db.run(
-    "INSERT INTO reviews (username, rating, review) VALUES (?, ?, ?)",
-    [username, rating, review],
+    "INSERT INTO reviews (user_id, title, content, created_at) VALUES (?, ?, ?, ?)",
+    [user_id, title, content, created_at],
     function (err) {
       if (err) {
-        return res.status(500).json({ message: "Error inserting review" });
+        return console.log("Error inserting review:", err.message);
       }
+      console.log("Review added successfully");
       res.redirect("/");
     }
   );
