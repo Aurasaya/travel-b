@@ -62,7 +62,7 @@ app.post("/add-review", (req, res) => {
 
   // บันทึกรีวิวลงในฐานข้อมูล
   db.run(
-    "INSERT INTO reviews (user_id, title, content, created_at) VALUES (?, ?, ?, ?)",
+    "INSERT INTO reviews (user_id, title, content) VALUES (?, ?, ?, ?)",
     [user_id, title, content, rating],
     function (err) {
       if (err) {
@@ -77,14 +77,14 @@ app.post("/add-review", (req, res) => {
 
 app.put("/reviews/:id", (req, res) => {
   const { id } = req.params;
-  const { title, content, rating } = req.body;
+  const { country, title, content, rating } = req.body;
 
-  if (!title || !content || !rating) {
+  if (!country || !title || !content || !rating) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   db.run(
-    "UPDATE reviews SET title = ?, content = ?, rating = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+    "UPDATE reviews SET country = ?, title = ?, content = ?, rating = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
     [title, content, rating, id],
     function (err) {
       if (err) {
