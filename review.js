@@ -28,6 +28,7 @@ db.serialize(() => {
   db.run(`CREATE TABLE IF NOT EXISTS reviews (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,  // เชื่อมโยงกับผู้ใช้
+      country TEXT NOT NULL,
       title TEXT NOT NULL,  // ชื่อรีวิว
       content TEXT NOT NULL,  // เนื้อหาของรีวิว
       rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
@@ -38,7 +39,7 @@ db.serialize(() => {
 });
 
 // หน้ารีวิวหลัก
-app.get("/", (req, res) => {
+app.get("/reviews", (req, res) => {
   db.all("SELECT * FROM reviews", [], (err, rows) => {
     if (err) {
       return res.status(500).json({ message: "Error fetching reviews" });
@@ -54,16 +55,25 @@ app.get("/add-review", (req, res) => {
 
 // API สำหรับเพิ่มรีวิว
 app.post("/add-review", (req, res) => {
-  const { user_id, title, content, rating } = req.body;
+  const { user_id, country, title, content, rating, created_at, updated_at } =
+    req.body;
 
-  if (!user_id || !title || !content || !rating) {
+  if (
+    !user_id ||
+    !country ||
+    !title ||
+    !content ||
+    !rating ||
+    !created_at ||
+    !updated_at
+  ) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   // บันทึกรีวิวลงในฐานข้อมูล
   db.run(
-    "INSERT INTO reviews (user_id, title, content) VALUES (?, ?, ?, ?)",
-    [user_id, title, content, rating],
+    "INSERT INTO reviews (user_id, country, title, content, rating) VALUES (?, ?, ?, ?, ?)",
+    [user_id, country, title, content, rating],
     function (err) {
       if (err) {
         return res.status(500).json({ message: "Error inserting review" });
@@ -77,15 +87,15 @@ app.post("/add-review", (req, res) => {
 
 app.put("/reviews/:id", (req, res) => {
   const { id } = req.params;
-  const { country, title, content, rating } = req.body;
+  const { country, title, content, rating, created_at, updated_at } = req.body;
 
-  if (!country || !title || !content || !rating) {
+  if (!country || !title || !content || !rating || !created_at || !updated_at) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   db.run(
-    "UPDATE reviews SET country = ?, title = ?, content = ?, rating = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-    [title, content, rating, id],
+    "UPDATE reviews SET country= ?, title = ?, content = ?, rating = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+    [country, title, content, rating, created_at, updated_at],
     function (err) {
       if (err) {
         return res.status(500).json({ message: "Error updating review" });
@@ -107,3 +117,5 @@ const PORT = process.env.PORT || 7001;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+// test push git
